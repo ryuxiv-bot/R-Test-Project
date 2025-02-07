@@ -1,0 +1,69 @@
+library(data.table)
+
+# Load the data using fread()
+data_customer <- fread("data_customer.csv")
+data_personal <- fread("data_personal.csv")
+
+# 2. Prepare data for analysis
+
+# Merge tables on CustomerId
+merged_data <- merge(data_customer, data_personal, by = "CustomerId")
+
+# Convert columns to factors
+merged_data$Exited <- as.factor(merged_data$Exited)
+merged_data$Gender <- as.factor(merged_data$Gender)
+
+# Quick check on data
+str(merged_data)
+summary(merged_data)
+
+# 3. Predict churn probability
+
+# Create logistic regression model
+churn_model <- glm(Exited ~ CreditScore + Gender + Age + Tenure + Balance + 
+                     NumOfProducts + HasCrCard + IsActiveMember + EstimatedSalary, 
+                   data = merged_data, family = "binomial")
+
+# Predict churn probability
+merged_data$Churn_Probability <- predict(churn_model, newdata = merged_data, type = "response")
+
+# Find customers with highest and lowest churn probability
+highest_churn <- merged_data[which.max(Churn_Probability), ]
+lowest_churn <- merged_data[which.min(Churn_Probability), ]
+
+# Compute average churn probability by gender
+avg_churn_by_gender <- aggregate(Churn_Probability ~ Gender, data = merged_data, mean)
+
+# Print results
+print(highest_churn)
+print(lowest_churn)
+print(avg_churn_by_gender)
+
+# 4. Create a package for churn prediction
+
+# Define function to get churn probability for a specific customer
+get_churn_probability <- function(data, customer_id) {
+  if (!customer_id %in% data$CustomerId) {
+    stop("Customer ID not found in the dataset.")
+  }
+  return(data[data$CustomerId == customer_id, Churn_Probability])
+}
+
+
+# Run tests
+setwd("churnprob")
+test()
+setwd("..")
+
+git init
+git remote add origin https://github.com/ryuxiv-bot/R-Test-Project.git
+git add .
+echo "# Churn Predictor" > README.md
+git add README.md
+git commit -m "Added README"
+
+git commit –m "initial commit"
+git push -u origin master
+
+
+
