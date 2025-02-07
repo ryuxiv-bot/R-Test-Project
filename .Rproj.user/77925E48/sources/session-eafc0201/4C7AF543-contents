@@ -61,8 +61,6 @@ git add .
 echo "# Churn Predictor" > README.md
 git add README.md
 git commit -m "Added README"
-
-git commit –m "initial commit"
 git push -u origin master
 
 
